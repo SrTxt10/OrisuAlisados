@@ -61,7 +61,30 @@
       background-color: #f472b6;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqC_XW-S9z7kTOodf01oi9xCYdbmVVtm0",
+      authDomain: "orisualisados.firebaseapp.com",
+      projectId: "orisualisados",
+      storageBucket: "orisualisados.firebasestorage.app",
+      messagingSenderId: "626633649536",
+      appId: "1:626633649536:web:cb97b044ee0521d9462565",
+      measurementId: "G-XBW4NQJFQD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.addDoc = addDoc;
+    window.collection = collection;
+  </script>
 </head>
+
 <body>
   <div class="formulario">
     <h1>Bríndanos tus Datos</h1>
@@ -88,14 +111,12 @@
   </div>
 
   <script>
-    // Recuperar parámetros de la URL
     const params = new URLSearchParams(window.location.search);
     const dia = params.get("dia");
     const mes = params.get("mes");
     const año = params.get("año");
     const hora = params.get("hora");
 
-    // Formatear la fecha
     const fechaFormateada = new Date(`${año}-${mes}-${dia}`).toLocaleDateString("es-ES", {
       weekday: "long",
       day: "numeric",
@@ -106,7 +127,7 @@
     document.getElementById("fecha").value = fechaFormateada;
     document.getElementById("hora").value = hora;
 
-    function confirmarReserva() {
+    async function confirmarReserva() {
       const nombre = document.getElementById("nombre").value.trim();
       const apellido = document.getElementById("apellido").value.trim();
       const telefono = document.getElementById("telefono").value.trim();
@@ -117,24 +138,20 @@
         return;
       }
 
-      // Crear objeto reserva
-      const nuevaReserva = {
-        dia: dia,
-        mes: mes,
-        año: año,
-        hora: hora,
-        nombre: nombre,
-        apellido: apellido,
-        telefono: telefono,
-        instagram: instagram
-      };
+      // Guardar solo fecha y hora en Firestore
+      try {
+        await addDoc(collection(db, "reservas"), {
+          dia: dia,
+          mes: mes,
+          año: año,
+          hora: hora
+        });
+        console.log("Reserva guardada en Firebase");
+      } catch (error) {
+        console.error("Error al guardar en Firebase:", error);
+      }
 
-      // Guardar reserva en localStorage
-      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-      reservas.push(nuevaReserva);
-      localStorage.setItem("reservas", JSON.stringify(reservas));
-
-      // Preparar mensaje para Telegram
+      // Enviar por Telegram
       const mensaje =
         `Nueva reserva:%0A` +
         `Nombre: ${encodeURIComponent(nombre)}%0A` +
@@ -152,7 +169,7 @@
         .then(data => {
           if (data.ok) {
             alert("Reserva confirmada y mensaje enviado por Telegram.");
-            alert("¡Gracias por reservar con nosotros! Que tengas un buen día 😊");
+            alert("¡Gracias por reservar con nosotras! Que tengas un buen día 😊");
             window.location.href = "index.html";
           } else {
             alert("Error al enviar el mensaje por Telegram: " + data.description);
@@ -164,7 +181,6 @@
           console.error(error);
         });
     }
-
   </script>
 </body>
 </html>
