@@ -151,7 +151,7 @@
         .then(response => response.json())
         .then(data => {
           if (data.ok) {
-            alert("Reserva confirmada");
+            alert("Reserva confirmada y mensaje enviado por Telegram.");
             alert("¡Gracias por reservar con nosotros! Que tengas un buen día 😊");
             window.location.href = "index.html";
           } else {
