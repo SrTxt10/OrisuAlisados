@@ -1,222 +1,154 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lista de Reservas | Orisu Alisados</title>
+  <title>Reservas (Privado)</title>
   <style>
     body {
+      font-family: 'Poppins', sans-serif;
       background-image: url('Fondo-index.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      font-family: 'Georgia', serif;
-      color: #b35b8c;
-      min-height: 100vh;
       margin: 0;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      color: #b35b8c;
+    }
+
+    nav {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 9999;
+    }
+
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #b35b8c;
+      font-weight: 600;
     }
 
     h1 {
-      margin-bottom: 30px;
-      font-size: 2.5em;
       text-align: center;
-      text-shadow: 1px 1px 3px #f9a8d4;
-    }
-
-    table {
-      border-collapse: collapse;
-      background-color: rgba(248, 212, 240, 0.8);
-      border-radius: 20px;
-      overflow: hidden;
-      width: 100%;
-      max-width: 900px;
-      box-shadow: 0 0 15px rgba(179, 91, 140, 0.6);
-    }
-
-    th, td {
-      padding: 12px 20px;
-      border-bottom: 1px solid #f9a8d4;
-      text-align: center;
-      font-size: 1.1em;
-    }
-
-    th {
-      background-color: #f9a8d4;
-      color: white;
-      font-weight: bold;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    button {
-      background-color: #f9a8d4;
-      border: none;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 1em;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #f472b6;
-    }
-
-    #sinReservas {
       margin-top: 40px;
-      font-size: 1.3em;
-      font-style: italic;
-      color: #888;
+      font-size: 2em;
     }
 
-    .volver {
-      margin-top: 30px;
-      padding: 10px 25px;
-      border-radius: 30px;
-      background-color: #f9a8d4;
-      color: white;
-      font-size: 1.3em;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
+    #listaReservas {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #f8d4f0;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
-    .volver:hover {
+
+    .reserva {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #fde7f4;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reserva-info {
+      max-width: 80%;
+    }
+
+    .reserva button {
       background-color: #f472b6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
     }
-  
-nav {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-}
 
-.menu-toggle {
-  display: none;
-  font-size: 2em;
-  cursor: pointer;
-  color: #b35b8c;
-}
-
-.menu {
-  background: rgba(255, 255, 255, 0.8);
-  list-style: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  display: flex;
-  gap: 10px;
-}
-
-.menu li a {
-  text-decoration: none;
-  color: #b35b8c;
-  font-weight: 600;
-}
-
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-  }
-
-  .menu {
-    flex-direction: column;
-    display: none;
-    position: absolute;
-    top: 50px;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 0 0 0 20px;
-  }
-
-  .menu.show {
-    display: flex;
-  }
-}
-
-</style>
+    .reserva button:hover {
+      background-color: #ec4899;
+    }
+  </style>
 </head>
 <body>
-  <h1>Lista de Reservas</h1>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="calendario.html">Reservar</a>
+    <a href="informacion.html">Información</a>
+    <a href="lista-reservas.html">Reservas</a>
+  </nav>
 
-  <table id="tablaReservas" style="display:none;">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Fecha</th>
-        <th>Hora</th>
-        <th>Teléfono</th>
-        <th>Instagram</th>
-        <th>Eliminar</th>
-      </tr>
-    </thead>
-    <tbody id="cuerpoReservas"></tbody>
-  </table>
+  <h1>Reservas Agendadas</h1>
+  <div id="listaReservas">Cargando reservas...</div>
 
-  <div id="sinReservas">No hay reservas realizadas.</div>
+  <!-- Firebase + JS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <a href="index.html" class="volver">Volver al Inicio</a>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqC_XW-S9z7kTOodf01oi9xCYdbmVVtm0",
+      authDomain: "orisualisados.firebaseapp.com",
+      projectId: "orisualisados",
+      storageBucket: "orisualisados.firebasestorage.app",
+      messagingSenderId: "626633649536",
+      appId: "1:626633649536:web:cb97b044ee0521d9462565",
+      measurementId: "G-XBW4NQJFQD"
+    };
 
-  <script>
-    const cuerpoReservas = document.getElementById('cuerpoReservas');
-    const tablaReservas = document.getElementById('tablaReservas');
-    const sinReservas = document.getElementById('sinReservas');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const contenedor = document.getElementById("listaReservas");
 
-    function cargarReservas() {
-      let reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+    async function cargarReservas() {
+      contenedor.innerHTML = "";
 
-      if (reservas.length === 0) {
-        tablaReservas.style.display = 'none';
-        sinReservas.style.display = 'block';
-        return;
-      }
+      const snapshot = await getDocs(collection(db, "reservas"));
+      snapshot.forEach(docSnap => {
+        const reserva = docSnap.data();
+        const id = docSnap.id;
 
-      tablaReservas.style.display = 'table';
-      sinReservas.style.display = 'none';
-      cuerpoReservas.innerHTML = '';
+        const div = document.createElement("div");
+        div.classList.add("reserva");
 
-      reservas.forEach((reserva, index) => {
-        const fila = document.createElement('tr');
-
-        fila.innerHTML = `
-          <td>${reserva.nombre}</td>
-          <td>${reserva.apellido}</td>
-          <td>${reserva.fecha}</td>
-          <td>${reserva.hora}</td>
-          <td>${reserva.telefono}</td>
-          <td>${reserva.instagram}</td>
-          <td><button onclick="eliminarReserva(${index})">Eliminar</button></td>
+        div.innerHTML = `
+          <div class="reserva-info">
+            <strong>${reserva.dia}/${reserva.mes}/${reserva.año}</strong> - ${reserva.hora}<br>
+            ${reserva.nombre || "Sin nombre"} ${reserva.apellido || ""}
+          </div>
+          <button onclick="eliminarReserva('${id}')">🗑️</button>
         `;
 
-        cuerpoReservas.appendChild(fila);
+        contenedor.appendChild(div);
       });
+
+      if (contenedor.innerHTML.trim() === "") {
+        contenedor.innerHTML = "<p>No hay reservas cargadas.</p>";
+      }
     }
 
-    function eliminarReserva(indice) {
-      let reservas = JSON.parse(localStorage.getItem('reservas')) || [];
-      reservas.splice(indice, 1);
-      localStorage.setItem('reservas', JSON.stringify(reservas));
-      cargarReservas();
-    }
+    window.eliminarReserva = async function(id) {
+      const confirmar = confirm("¿Querés eliminar esta reserva?");
+      if (confirmar) {
+        await deleteDoc(doc(db, "reservas", id));
+        alert("Reserva eliminada correctamente.");
+        cargarReservas();
+      }
+    };
 
     cargarReservas();
   </script>
-
-<script>
-  function toggleMenu() {
-    const menu = document.getElementById("menu");
-    menu.classList.toggle("show");
-  }
-</script>
-
 </body>
 </html>
