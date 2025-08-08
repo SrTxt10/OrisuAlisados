@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendario</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-image: url('Fondo-index.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    nav {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 9999;
+    }
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #b35b8c;
+      font-weight: 600;
+    }
+
+    .calendario {
+      background-color: #f8d4f0;
+      padding: 20px 40px;
+      border-radius: 25px;
+      text-align: center;
+      color: #b35b8c;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      opacity: 0.9;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+    }
+
+    .navegacion {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .flecha {
+      font-size: 1.5em;
+      cursor: pointer;
+      user-select: none;
+      color: #f498c2;
+      opacity: 0.6;
+    }
+
+    .mes-actual {
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      width: 14.28%;
+      padding: 10px;
+      border-radius: 10px;
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    th {
+      color: #fff;
+      background-color: #f9a8d4;
+    }
+
+    td {
+      background-color: #fff;
+      cursor: pointer;
+    }
+
+    td:hover {
+      background-color: #fbcfe8;
+    }
+
+    .dia-ocupado {
+      background-color: #ccc !important;
+      color: #888;
+      pointer-events: none;
+    }
+
+    .dia-pasado {
+      background-color: #eee !important;
+      color: #aaa;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="calendario.html">Reservar</a>
+    <a href="informacion.html">Información</a>
+    <a href="lista-reservas.html">Reservas</a>
+  </nav>
+
+  <div class="calendario">
+    <h1>Elige tu Fecha</h1>
+    <div class="navegacion">
+      <div class="flecha" onclick="cambiarMes(-1)">⬅️</div>
+      <div class="mes-actual" id="mesActual"></div>
+      <div class="flecha" onclick="cambiarMes(1)">➡️</div>
+    </div>
+    <table id="tablaCalendario">
+      <thead>
+        <tr>
+          <th>L</th><th>M</th><th>X</th><th>J</th><th>V</th><th>S</th><th>D</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpoCalendario"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const mesActualTexto = document.getElementById('mesActual');
+    const cuerpoCalendario = document.getElementById('cuerpoCalendario');
+
+    let fecha = new Date();
+
+    function mostrarCalendario(fecha) {
+      const año = fecha.getFullYear();
+      const mes = fecha.getMonth();
+      const primerDia = new Date(año, mes, 1);
+      const ultimoDia = new Date(año, mes + 1, 0);
+      const diasMes = ultimoDia.getDate();
+      const diaInicio = primerDia.getDay() === 0 ? 6 : primerDia.getDay() - 1;
+
+      mesActualTexto.textContent = fecha.toLocaleDateString('es-ES', {
+        month: 'long',
+        year: 'numeric'
+      });
+
+      cuerpoCalendario.innerHTML = '';
+
+      let fila = document.createElement('tr');
+      for (let i = 0; i < diaInicio; i++) {
+        fila.innerHTML += '<td></td>';
+      }
+
+      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+      let diasOcupados = {};
+
+      reservas.forEach(reserva => {
+        const clave = `${reserva.año}-${reserva.mes}-${reserva.dia}`;
+        if (!diasOcupados[clave]) {
+          diasOcupados[clave] = [];
+        }
+        diasOcupados[clave].push(reserva.hora);
+      });
+
+      for (let dia = 1; dia <= diasMes; dia++) {
+        if (fila.children.length === 7) {
+          cuerpoCalendario.appendChild(fila);
+          fila = document.createElement('tr');
+        }
+
+        const mesTexto = mes + 1;
+        const claveFecha = `${año}-${mesTexto}-${dia}`;
+        const horasReservadas = diasOcupados[claveFecha] || [];
+        const diaCompleto = horasReservadas.includes('9:00') && horasReservadas.includes('9:30') && horasReservadas.includes('13:00') && horasReservadas.includes('13:30');
+        const fechaActual = new Date();
+        const fechaDelDia = new Date(año, mes, dia);
+        fechaDelDia.setHours(0, 0, 0, 0);
+        fechaActual.setHours(0, 0, 0, 0);
+
+        let clase = '';
+        let contenido = '';
+        const diaSemana = fechaDelDia.getDay();
+
+        if (fechaDelDia < fechaActual) {
+          clase = 'dia-pasado';
+        } else if (diaCompleto) {
+          clase = 'dia-ocupado';
+        } else if (diaSemana !== 0) {
+          clase = 'dia-ocupado';
+        }
+
+        if (clase === '') {
+          contenido = `onclick="window.location.href='horario.html?dia=${dia}&mes=${mesTexto}&año=${año}'"`;
+        }
+
+        fila.innerHTML += `<td class="${clase}" ${contenido}>${dia}</td>`;
+      }
+
+      cuerpoCalendario.appendChild(fila);
+    }
+
+    function cambiarMes(valor) {
+      fecha.setMonth(fecha.getMonth() + valor);
+      mostrarCalendario(fecha);
+    }
+
+    mostrarCalendario(fecha);
+  </script>
+</body>
+</html>

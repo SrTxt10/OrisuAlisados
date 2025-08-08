@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Elegir Horario</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-image: url('Fondo-index.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    nav {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 9999;
+    }
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #b35b8c;
+      font-weight: 600;
+    }
+
+    h1 {
+      color: #b35b8c;
+      margin-bottom: 20px;
+    }
+
+    .horarios {
+      background-color: #f8d4f0;
+      border-radius: 30px;
+      padding: 30px;
+      display: flex;
+      gap: 30px;
+      opacity: 0.9;
+    }
+
+    .hora {
+      background-color: #fde7f4;
+      padding: 30px 50px;
+      border-radius: 20px;
+      font-size: 2em;
+      color: #b35b8c;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .hora:hover {
+      background-color: #fbcfe8;
+    }
+
+    .ocupado {
+      background-color: #ccc !important;
+      color: #888 !important;
+      cursor: not-allowed;
+    }
+
+    .confirmar {
+      margin-top: 30px;
+      font-size: 1.2em;
+      color: #b35b8c;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="calendario.html">Reservar</a>
+    <a href="informacion.html">Información</a>
+    <a href="lista-reservas.html">Reservas</a>
+  </nav>
+
+  <h1>Elige tu Horario</h1>
+  <div class="horarios">
+    <div id="hora900" class="hora" onclick="confirmar('9:00')">9:00</div>
+    <div id="hora930" class="hora" onclick="confirmar('9:30')">9:30</div>
+    <div id="hora1300" class="hora" onclick="confirmar('13:00')">13:00</div>
+    <div id="hora1330" class="hora" onclick="confirmar('13:30')">13:30</div>
+  </div>
+  <div class="confirmar" id="mensajeConfirmacion"></div>
+
+  <script>
+    const mensaje = document.getElementById("mensajeConfirmacion");
+    const params = new URLSearchParams(window.location.search);
+    const dia = params.get("dia");
+    const mes = params.get("mes");
+    const año = params.get("año");
+
+    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    const reservasDia = reservas.filter(r => r.dia == dia && r.mes == mes && r.año == año);
+
+    function deshabilitarHora(idHora) {
+      const elem = document.getElementById(idHora);
+      if (elem) {
+        elem.classList.add('ocupado');
+        elem.onclick = null;
+      }
+    }
+
+    reservasDia.forEach(reserva => {
+      const horaID = 'hora' + reserva.hora.replace(':', '');
+      deshabilitarHora(horaID);
+    });
+
+    function confirmar(hora) {
+      const id = 'hora' + hora.replace(':', '');
+      if (document.getElementById(id).classList.contains('ocupado')) {
+        mensaje.textContent = "Este horario ya está ocupado.";
+        return;
+      }
+      window.location.href = `datos.html?dia=${dia}&mes=${mes}&año=${año}&hora=${hora}`;
+    }
+  </script>
+</body>
+</html>

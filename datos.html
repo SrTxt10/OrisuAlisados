@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bríndanos tus Datos</title>
+  <style>
+    body {
+      background-image: url('Fondo-index.png');
+      font-family: 'Georgia', serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .formulario {
+      background-color: #f8d4f0;
+      padding: 40px;
+      border-radius: 40px;
+      width: 500px;
+      color: #b35b8c;
+      margin: 0;
+      opacity: 0.8;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2em;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    input {
+      width: 90%;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 20px;
+      background-color: #fde7f4;
+      color: #b35b8c;
+      font-size: 1em;
+    }
+    input[readonly] {
+      background-color: #f0c7dd;
+    }
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 25px;
+      background-color: #f9a8d4;
+      color: white;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #f472b6;
+    }
+  </style>
+</head>
+<body>
+  <div class="formulario">
+    <h1>Bríndanos tus Datos</h1>
+    
+    <label for="fecha">Fecha</label>
+    <input type="text" id="fecha" readonly />
+
+    <label for="hora">Horario</label>
+    <input type="text" id="hora" readonly />
+
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" />
+
+    <label for="apellido">Apellido</label>
+    <input type="text" id="apellido" />
+
+    <label for="telefono">Número de contacto</label>
+    <input type="text" id="telefono" />
+
+    <label for="instagram">Instagram</label>
+    <input type="text" id="instagram" />
+
+    <button onclick="confirmarReserva()">Confirmar tu Reserva</button>
+  </div>
+
+  <script>
+    // Recuperar parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const dia = params.get("dia");
+    const mes = params.get("mes");
+    const año = params.get("año");
+    const hora = params.get("hora");
+
+    // Formatear la fecha
+    const fechaFormateada = new Date(`${año}-${mes}-${dia}`).toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+
+    document.getElementById("fecha").value = fechaFormateada;
+    document.getElementById("hora").value = hora;
+
+    function confirmarReserva() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const apellido = document.getElementById("apellido").value.trim();
+      const telefono = document.getElementById("telefono").value.trim();
+      const instagram = document.getElementById("instagram").value.trim();
+
+      if (!nombre || !apellido || !telefono || !instagram) {
+        alert("Por favor completa todos los campos.");
+        return;
+      }
+
+      // Crear objeto reserva
+      const nuevaReserva = {
+        dia: dia,
+        mes: mes,
+        año: año,
+        hora: hora,
+        nombre: nombre,
+        apellido: apellido,
+        telefono: telefono,
+        instagram: instagram
+      };
+
+      // Guardar reserva en localStorage
+      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+      reservas.push(nuevaReserva);
+      localStorage.setItem("reservas", JSON.stringify(reservas));
+
+      // Preparar mensaje para Telegram
+      const mensaje =
+        `Nueva reserva:%0A` +
+        `Nombre: ${encodeURIComponent(nombre)}%0A` +
+        `Apellido: ${encodeURIComponent(apellido)}%0A` +
+        `Fecha: ${encodeURIComponent(document.getElementById("fecha").value)}%0A` +
+        `Hora: ${encodeURIComponent(document.getElementById("hora").value)}%0A` +
+        `Teléfono: ${encodeURIComponent(telefono)}%0A` +
+        `Instagram: ${encodeURIComponent(instagram)}`;
+
+      const token = "8219990960:AAFAc8NQS0NTp-O_ppfysexQnRySRSogJZk";
+      const chat_id = "7449104957";
+
+      fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${mensaje}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            alert("Reserva confirmada y mensaje enviado por Telegram.");
+            alert("¡Gracias por reservar con nosotros! Que tengas un buen día 😊");
+            window.location.href = "index.html";
+          } else {
+            alert("Error al enviar el mensaje por Telegram: " + data.description);
+            console.error("Error de Telegram:", data);
+          }
+        })
+        .catch(error => {
+          alert("Error de red: " + error);
+          console.error(error);
+        });
+    }
+
+  </script>
+</body>
+</html>

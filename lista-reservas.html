@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Reservas | Orisu</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: url('Fondo-index.png') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    nav {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 9999;
+    }
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #b35b8c;
+      font-weight: 600;
+    }
+
+    h1 {
+      color: #b35b8c;
+      margin-bottom: 30px;
+      font-size: 2em;
+      text-shadow: 1px 1px 2px #fff;
+    }
+
+    table {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-collapse: collapse;
+      border-radius: 20px;
+      overflow: hidden;
+      max-width: 1000px;
+      width: 100%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 20px;
+      text-align: center;
+      border-bottom: 1px solid #f3cfe3;
+    }
+
+    th {
+      background-color: #f9a8d4;
+      color: white;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .volver {
+      margin-top: 30px;
+      padding: 12px 25px;
+      background-color: #f9a8d4;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      text-decoration: none;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+
+    .volver:hover {
+      background-color: #f472b6;
+    }
+
+    #sinReservas, #sinPermisos {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #6b3e57;
+    }
+
+    #claveModal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #claveModalContent {
+      background-color: #fff0f5;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    #claveInput {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    #claveBtn {
+      background-color: #f9a8d4;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      border-radius: 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    #claveBtn:hover {
+      background-color: #f472b6;
+    }
+
+    .btn-eliminar {
+      background-color: #e57373;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .btn-eliminar:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="calendario.html">Reservar</a>
+    <a href="informacion.html">Información</a>
+    <a href="lista-reservas.html">Reservas</a>
+  </nav>
+
+  <div id="claveModal">
+    <div id="claveModalContent">
+      <h2>🔐 Ingresá la clave para ver las reservas</h2>
+      <input type="password" id="claveInput" placeholder="Clave de administrador">
+      <button id="claveBtn" onclick="verificarClave()">Ingresar</button>
+    </div>
+  </div>
+
+  <h1 id="titulo" style="display:none;">Reservas Realizadas</h1>
+  <table id="tablaReservas" style="display: none;">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Teléfono</th>
+        <th>Instagram</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+    <tbody id="cuerpoReservas"></tbody>
+  </table>
+
+  <div id="sinReservas" style="display: none;">No hay reservas registradas por ahora.</div>
+  <div id="sinPermisos" style="display: none;">🚫 Ups... no tenés permisos para entrar en esta parte de la web.</div>
+  <a class="volver" href="index.html">Volver al Inicio</a>
+
+  <script>
+    const claveAdmin = "orisu2024";
+
+    const cuerpo = document.getElementById("cuerpoReservas");
+    const tabla = document.getElementById("tablaReservas");
+    const sinReservas = document.getElementById("sinReservas");
+    const sinPermisos = document.getElementById("sinPermisos");
+    const titulo = document.getElementById("titulo");
+    const modal = document.getElementById("claveModal");
+    const inputClave = document.getElementById("claveInput");
+
+    function verificarClave() {
+      const claveIngresada = inputClave.value.trim();
+      if (claveIngresada === claveAdmin) {
+        modal.style.display = "none";
+        mostrarReservas();
+      } else {
+        modal.style.display = "none";
+        sinPermisos.style.display = "block";
+      }
+    }
+
+    function mostrarReservas() {
+      const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+      if (reservas.length === 0) {
+        tabla.style.display = "none";
+        sinReservas.style.display = "block";
+      } else {
+        tabla.style.display = "table";
+        sinReservas.style.display = "none";
+        titulo.style.display = "block";
+
+        cuerpo.innerHTML = "";
+
+        reservas.forEach((reserva, index) => {
+          const fila = document.createElement("tr");
+          const fechaFormateada = new Date(`${reserva.año}-${reserva.mes}-${reserva.dia}`).toLocaleDateString("es-ES", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+
+          fila.innerHTML = `
+            <td>${fechaFormateada}</td>
+            <td>${reserva.hora}</td>
+            <td>${reserva.nombre}</td>
+            <td>${reserva.apellido}</td>
+            <td>${reserva.telefono}</td>
+            <td>${reserva.instagram}</td>
+            <td><button class="btn-eliminar" onclick="eliminarReserva(${index})">🗑️</button></td>
+          `;
+
+          cuerpo.appendChild(fila);
+        });
+      }
+    }
+
+    function eliminarReserva(indice) {
+      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+      reservas.splice(indice, 1);
+      localStorage.setItem("reservas", JSON.stringify(reservas));
+      mostrarReservas();
+    }
+  </script>
+</body>
+</html>
