@@ -163,7 +163,9 @@
       // Agrupar reservas por fecha
       const diasOcupados = {};
       reservas.forEach(reserva => {
-        const clave = `${reserva.año}-${reserva.mes}-${reserva.dia}`;
+        const diaF = String(reserva.dia).padStart(2, '0');
+        const mesF = String(reserva.mes).padStart(2, '0');
+        const clave = `${reserva.año}-${mesF}-${diaF}`;
         if (!diasOcupados[clave]) diasOcupados[clave] = [];
         diasOcupados[clave].push(reserva.hora);
       });
@@ -192,11 +194,10 @@
 
         let clase = '';
         let contenido = '';
-        const diaSemana = fechaDelDia.getDay();
 
         if (fechaDelDia < fechaActual) {
           clase = 'dia-pasado';
-        } else if (diaCompleto || diaSemana === 0) {
+        } else if (diaCompleto) {
           clase = 'dia-ocupado';
         }
 
@@ -215,7 +216,6 @@
       mostrarCalendario(fecha);
     }
 
-    // Esperar a que cargue el DOM antes de llamar a mostrarCalendario()
     window.addEventListener("DOMContentLoaded", () => {
       mostrarCalendario(fecha);
     });
