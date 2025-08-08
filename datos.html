@@ -12,21 +12,25 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      padding: 20px;
     }
+
     .formulario {
       background-color: #f8d4f0;
       padding: 40px;
       border-radius: 40px;
-      width: 500px;
+      width: 100%;
+      max-width: 500px;
       color: #b35b8c;
-      margin: 0;
-      opacity: 0.8;
+      opacity: 0.9;
     }
+
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-size: 2em;
     }
+
     label {
       display: block;
       margin-top: 15px;
@@ -34,8 +38,9 @@
       font-weight: bold;
       font-size: 1.1em;
     }
+
     input {
-      width: 90%;
+      width: 100%;
       padding: 10px 15px;
       border: none;
       border-radius: 20px;
@@ -43,9 +48,11 @@
       color: #b35b8c;
       font-size: 1em;
     }
+
     input[readonly] {
       background-color: #f0c7dd;
     }
+
     button {
       margin-top: 25px;
       width: 100%;
@@ -57,6 +64,7 @@
       font-size: 1.2em;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #f472b6;
     }
@@ -138,20 +146,24 @@
         return;
       }
 
-      // Guardar solo fecha y hora en Firestore
+      // 🔒 Guardar en Firestore con el mismo formato que ya estás usando
       try {
         await addDoc(collection(db, "reservas"), {
-          dia: dia,
-          mes: mes,
-          año: año,
-          hora: hora
+          año: `${año}`,
+          mes: `${mes}`,
+          dia: `${dia}`,
+          hora: `${hora}`,
+          nombre: `${nombre}`,
+          apellido: `${apellido}`,
+          telefono: `${telefono}`,
+          instagram: `${instagram}`
         });
-        console.log("Reserva guardada en Firebase");
+        console.log("Reserva guardada correctamente");
       } catch (error) {
         console.error("Error al guardar en Firebase:", error);
       }
 
-      // Enviar por Telegram
+      // ✉️ Enviar por Telegram
       const mensaje =
         `Nueva reserva:%0A` +
         `Nombre: ${encodeURIComponent(nombre)}%0A` +
@@ -168,12 +180,12 @@
         .then(response => response.json())
         .then(data => {
           if (data.ok) {
-            alert("Reserva confirmada y mensaje enviado por Telegram.");
-            alert("¡Gracias por reservar con nosotras! Que tengas un buen día 😊");
+            alert("Reserva confirmada y enviada por Telegram.");
+            alert("¡Gracias por reservar con nosotras! 😊");
             window.location.href = "index.html";
           } else {
-            alert("Error al enviar el mensaje por Telegram: " + data.description);
-            console.error("Error de Telegram:", data);
+            alert("Error al enviar por Telegram: " + data.description);
+            console.error(data);
           }
         })
         .catch(error => {
