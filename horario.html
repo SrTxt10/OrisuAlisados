@@ -50,6 +50,8 @@
       display: flex;
       gap: 30px;
       opacity: 0.9;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .hora {
@@ -71,6 +73,7 @@
       background-color: #ccc !important;
       color: #888 !important;
       cursor: not-allowed;
+      pointer-events: none;
     }
 
     .confirmar {
@@ -79,7 +82,76 @@
       color: #b35b8c;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqC_XW-S9z7kTOodf01oi9xCYdbmVVtm0",
+      authDomain: "orisualisados.firebaseapp.com",
+      projectId: "orisualisados",
+      storageBucket: "orisualisados.firebasestorage.app",
+      messagingSenderId: "626633649536",
+      appId: "1:626633649536:web:cb97b044ee0521d9462565",
+      measurementId: "G-XBW4NQJFQD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const mensaje = document.getElementById("mensajeConfirmacion");
+    const params = new URLSearchParams(window.location.search);
+    const dia = params.get("dia");
+    const mes = params.get("mes");
+    const año = params.get("año");
+
+    const horarios = ["9:00", "9:30", "13:00", "13:30"];
+
+    async function cargarHorarios() {
+      const reservasDia = [];
+
+      try {
+        const q = query(collection(db, "reservas"),
+          where("dia", "==", dia),
+          where("mes", "==", mes),
+          where("año", "==", año)
+        );
+
+        const snapshot = await getDocs(q);
+        snapshot.forEach(doc => {
+          reservasDia.push(doc.data().hora);
+        });
+
+      } catch (error) {
+        console.error("Error al cargar horarios desde Firebase:", error);
+      }
+
+      horarios.forEach(hora => {
+        const id = "hora" + hora.replace(":", "");
+        const elemento = document.getElementById(id);
+        if (reservasDia.includes(hora)) {
+          elemento.classList.add("ocupado");
+        }
+      });
+    }
+
+    window.confirmar = function(hora) {
+      const id = 'hora' + hora.replace(':', '');
+      if (document.getElementById(id).classList.contains('ocupado')) {
+        mensaje.textContent = "Este horario ya está ocupado.";
+        return;
+      }
+      window.location.href = `datos.html?dia=${dia}&mes=${mes}&año=${año}&hora=${hora}`;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      cargarHorarios();
+    });
+  </script>
 </head>
+
 <body>
   <nav>
     <a href="index.html">Inicio</a>
@@ -96,38 +168,5 @@
     <div id="hora1330" class="hora" onclick="confirmar('13:30')">13:30</div>
   </div>
   <div class="confirmar" id="mensajeConfirmacion"></div>
-
-  <script>
-    const mensaje = document.getElementById("mensajeConfirmacion");
-    const params = new URLSearchParams(window.location.search);
-    const dia = params.get("dia");
-    const mes = params.get("mes");
-    const año = params.get("año");
-
-    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    const reservasDia = reservas.filter(r => r.dia == dia && r.mes == mes && r.año == año);
-
-    function deshabilitarHora(idHora) {
-      const elem = document.getElementById(idHora);
-      if (elem) {
-        elem.classList.add('ocupado');
-        elem.onclick = null;
-      }
-    }
-
-    reservasDia.forEach(reserva => {
-      const horaID = 'hora' + reserva.hora.replace(':', '');
-      deshabilitarHora(horaID);
-    });
-
-    function confirmar(hora) {
-      const id = 'hora' + hora.replace(':', '');
-      if (document.getElementById(id).classList.contains('ocupado')) {
-        mensaje.textContent = "Este horario ya está ocupado.";
-        return;
-      }
-      window.location.href = `datos.html?dia=${dia}&mes=${mes}&año=${año}&hora=${hora}`;
-    }
-  </script>
 </body>
 </html>
