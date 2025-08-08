@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link rel="stylesheet" href="responsive.css" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inicio | Orisu</title>
@@ -77,20 +76,81 @@
         padding: 12px 20px;
       }
     }
-  </style>
+  
+nav {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 2em;
+  cursor: pointer;
+  color: #b35b8c;
+}
+
+.menu {
+  background: rgba(255, 255, 255, 0.8);
+  list-style: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.menu li a {
+  text-decoration: none;
+  color: #b35b8c;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .menu {
+    flex-direction: column;
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0 0 0 20px;
+  }
+
+  .menu.show {
+    display: flex;
+  }
+}
+
+</style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Inicio</a>
-    <a href="calendario.html">Reservar</a>
-    <a href="informacion.html">Información</a>
-    <a href="lista-reservas.html">Reservas</a>
-  </nav>
+  <nav><nav>
+  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+  <ul class="menu" id="menu">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="calendario.html">Reservar</a></li>
+    <li><a href="informacion.html">Información</a></li>
+    <li><a href="lista-reservas.html">Reservas</a></li>
+  </ul>
+</nav></nav>
 
   <div class="contenedor">
     <h1>Bienvenida a Orisu Alisados</h1>
     <p>✨ Tu cabello sin frizz te está esperando ✨</p>
     <button class="boton-principal" onclick="window.location.href='calendario.html'">Agendá tu turno</button>
   </div>
+
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById("menu");
+    menu.classList.toggle("show");
+  }
+</script>
+
 </body>
 </html>
