@@ -180,8 +180,6 @@
         .then(response => response.json())
         .then(data => {
           if (data.ok) {
-            alert("Reserva confirmada y enviada por Telegram.");
-            alert("¡Gracias por reservar con nosotras! 😊");
             window.location.href = "index.html";
           } else {
             alert("Error al enviar por Telegram: " + data.description);
