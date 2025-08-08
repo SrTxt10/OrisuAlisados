@@ -21,7 +21,6 @@
       justify-content: center;
       min-height: 100vh;
     }
-
     nav {
       position: fixed;
       top: 20px;
@@ -37,7 +36,6 @@
       color: #b35b8c;
       font-weight: 600;
     }
-
     .calendario {
       background-color: #f8d4f0;
       padding: 20px 40px;
@@ -47,18 +45,15 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
       opacity: 0.9;
     }
-
     h1 {
       margin-bottom: 20px;
       font-size: 2em;
     }
-
     .navegacion {
       display: flex;
       justify-content: space-between;
       margin-bottom: 10px;
     }
-
     .flecha {
       font-size: 1.5em;
       cursor: pointer;
@@ -66,17 +61,14 @@
       color: #f498c2;
       opacity: 0.6;
     }
-
     .mes-actual {
       font-size: 1.3em;
       font-weight: bold;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
     }
-
     th, td {
       width: 14.28%;
       padding: 10px;
@@ -84,27 +76,22 @@
       opacity: 0.9;
       text-align: center;
     }
-
     th {
       color: #fff;
       background-color: #f9a8d4;
     }
-
     td {
       background-color: #fff;
       cursor: pointer;
     }
-
     td:hover {
       background-color: #fbcfe8;
     }
-
     .dia-ocupado {
       background-color: #ccc !important;
       color: #888;
       pointer-events: none;
     }
-
     .dia-pasado {
       background-color: #eee !important;
       color: #aaa;
@@ -163,9 +150,9 @@
       // Agrupar reservas por fecha
       const diasOcupados = {};
       reservas.forEach(reserva => {
-        const diaF = String(reserva.dia).padStart(2, '0');
-        const mesF = String(reserva.mes).padStart(2, '0');
-        const clave = `${reserva.año}-${mesF}-${diaF}`;
+        const mesFormateado = String(reserva.mes).padStart(2, '0');
+        const diaFormateado = String(reserva.dia).padStart(2, '0');
+        const clave = `${reserva.año}-${mesFormateado}-${diaFormateado}`;
         if (!diasOcupados[clave]) diasOcupados[clave] = [];
         diasOcupados[clave].push(reserva.hora);
       });
@@ -194,7 +181,6 @@
 
         let clase = '';
         let contenido = '';
-
         if (fechaDelDia < fechaActual) {
           clase = 'dia-pasado';
         } else if (diaCompleto) {
@@ -216,6 +202,7 @@
       mostrarCalendario(fecha);
     }
 
+    window.cambiarMes = cambiarMes;
     window.addEventListener("DOMContentLoaded", () => {
       mostrarCalendario(fecha);
     });
