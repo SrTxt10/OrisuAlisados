@@ -111,6 +111,115 @@
       pointer-events: none;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqC_XW-S9z7kTOodf01oi9xCYdbmVVtm0",
+      authDomain: "orisualisados.firebaseapp.com",
+      projectId: "orisualisados",
+      storageBucket: "orisualisados.firebasestorage.app",
+      messagingSenderId: "626633649536",
+      appId: "1:626633649536:web:cb97b044ee0521d9462565",
+      measurementId: "G-XBW4NQJFQD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const mesActualTexto = document.getElementById('mesActual');
+    const cuerpoCalendario = document.getElementById('cuerpoCalendario');
+    let fecha = new Date();
+
+    const HORARIOS_REQUERIDOS = ["9:00", "9:30", "13:00", "13:30"];
+
+    async function mostrarCalendario(fecha) {
+      const año = fecha.getFullYear();
+      const mes = fecha.getMonth();
+      const primerDia = new Date(año, mes, 1);
+      const ultimoDia = new Date(año, mes + 1, 0);
+      const diasMes = ultimoDia.getDate();
+      const diaInicio = primerDia.getDay() === 0 ? 6 : primerDia.getDay() - 1;
+
+      mesActualTexto.textContent = fecha.toLocaleDateString('es-ES', {
+        month: 'long',
+        year: 'numeric'
+      });
+
+      cuerpoCalendario.innerHTML = '';
+
+      // Obtener todas las reservas desde Firebase
+      let reservas = [];
+      try {
+        const snapshot = await getDocs(collection(db, "reservas"));
+        snapshot.forEach(doc => reservas.push(doc.data()));
+      } catch (error) {
+        console.error("Error al cargar reservas desde Firebase:", error);
+      }
+
+      // Agrupar reservas por fecha
+      const diasOcupados = {};
+      reservas.forEach(reserva => {
+        const clave = `${reserva.año}-${reserva.mes}-${reserva.dia}`;
+        if (!diasOcupados[clave]) diasOcupados[clave] = [];
+        diasOcupados[clave].push(reserva.hora);
+      });
+
+      let fila = document.createElement('tr');
+      for (let i = 0; i < diaInicio; i++) {
+        fila.innerHTML += '<td></td>';
+      }
+
+      for (let dia = 1; dia <= diasMes; dia++) {
+        if (fila.children.length === 7) {
+          cuerpoCalendario.appendChild(fila);
+          fila = document.createElement('tr');
+        }
+
+        const mesTexto = String(mes + 1).padStart(2, '0');
+        const diaTexto = String(dia).padStart(2, '0');
+        const claveFecha = `${año}-${mesTexto}-${diaTexto}`;
+        const horasReservadas = diasOcupados[claveFecha] || [];
+        const diaCompleto = HORARIOS_REQUERIDOS.every(hora => horasReservadas.includes(hora));
+
+        const fechaActual = new Date();
+        const fechaDelDia = new Date(año, mes, dia);
+        fechaDelDia.setHours(0, 0, 0, 0);
+        fechaActual.setHours(0, 0, 0, 0);
+
+        let clase = '';
+        let contenido = '';
+        const diaSemana = fechaDelDia.getDay();
+
+        if (fechaDelDia < fechaActual) {
+          clase = 'dia-pasado';
+        } else if (diaCompleto || diaSemana === 0) {
+          clase = 'dia-ocupado';
+        }
+
+        if (clase === '') {
+          contenido = `onclick="window.location.href='horario.html?dia=${dia}&mes=${mesTexto}&año=${año}'"`;
+        }
+
+        fila.innerHTML += `<td class="${clase}" ${contenido}>${dia}</td>`;
+      }
+
+      cuerpoCalendario.appendChild(fila);
+    }
+
+    function cambiarMes(valor) {
+      fecha.setMonth(fecha.getMonth() + valor);
+      mostrarCalendario(fecha);
+    }
+
+    // Esperar a que cargue el DOM antes de llamar a mostrarCalendario()
+    window.addEventListener("DOMContentLoaded", () => {
+      mostrarCalendario(fecha);
+    });
+  </script>
 </head>
 <body>
   <nav>
@@ -136,87 +245,5 @@
       <tbody id="cuerpoCalendario"></tbody>
     </table>
   </div>
-
-  <script>
-    const mesActualTexto = document.getElementById('mesActual');
-    const cuerpoCalendario = document.getElementById('cuerpoCalendario');
-
-    let fecha = new Date();
-
-    function mostrarCalendario(fecha) {
-      const año = fecha.getFullYear();
-      const mes = fecha.getMonth();
-      const primerDia = new Date(año, mes, 1);
-      const ultimoDia = new Date(año, mes + 1, 0);
-      const diasMes = ultimoDia.getDate();
-      const diaInicio = primerDia.getDay() === 0 ? 6 : primerDia.getDay() - 1;
-
-      mesActualTexto.textContent = fecha.toLocaleDateString('es-ES', {
-        month: 'long',
-        year: 'numeric'
-      });
-
-      cuerpoCalendario.innerHTML = '';
-
-      let fila = document.createElement('tr');
-      for (let i = 0; i < diaInicio; i++) {
-        fila.innerHTML += '<td></td>';
-      }
-
-      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-      let diasOcupados = {};
-
-      reservas.forEach(reserva => {
-        const clave = `${reserva.año}-${reserva.mes}-${reserva.dia}`;
-        if (!diasOcupados[clave]) {
-          diasOcupados[clave] = [];
-        }
-        diasOcupados[clave].push(reserva.hora);
-      });
-
-      for (let dia = 1; dia <= diasMes; dia++) {
-        if (fila.children.length === 7) {
-          cuerpoCalendario.appendChild(fila);
-          fila = document.createElement('tr');
-        }
-
-        const mesTexto = mes + 1;
-        const claveFecha = `${año}-${mesTexto}-${dia}`;
-        const horasReservadas = diasOcupados[claveFecha] || [];
-        const diaCompleto = horasReservadas.includes('9:00') && horasReservadas.includes('9:30') && horasReservadas.includes('13:00') && horasReservadas.includes('13:30');
-        const fechaActual = new Date();
-        const fechaDelDia = new Date(año, mes, dia);
-        fechaDelDia.setHours(0, 0, 0, 0);
-        fechaActual.setHours(0, 0, 0, 0);
-
-        let clase = '';
-        let contenido = '';
-        const diaSemana = fechaDelDia.getDay();
-
-        if (fechaDelDia < fechaActual) {
-          clase = 'dia-pasado';
-        } else if (diaCompleto) {
-          clase = 'dia-ocupado';
-        } else if (diaSemana !== 0) {
-          clase = 'dia-ocupado';
-        }
-
-        if (clase === '') {
-          contenido = `onclick="window.location.href='horario.html?dia=${dia}&mes=${mesTexto}&año=${año}'"`;
-        }
-
-        fila.innerHTML += `<td class="${clase}" ${contenido}>${dia}</td>`;
-      }
-
-      cuerpoCalendario.appendChild(fila);
-    }
-
-    function cambiarMes(valor) {
-      fecha.setMonth(fecha.getMonth() + valor);
-      mostrarCalendario(fecha);
-    }
-
-    mostrarCalendario(fecha);
-  </script>
 </body>
 </html>
