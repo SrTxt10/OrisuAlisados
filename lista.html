@@ -56,10 +56,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .reserva-info {
-      max-width: 80%;
+      flex: 1 1 100%;
     }
 
     .reserva button {
@@ -67,12 +69,28 @@
       color: white;
       border: none;
       border-radius: 10px;
-      padding: 5px 10px;
+      padding: 10px 15px;
       cursor: pointer;
+      font-size: 1em;
+      flex: 1 1 100%;
     }
 
     .reserva button:hover {
       background-color: #ec4899;
+    }
+
+    @media (min-width: 600px) {
+      .reserva {
+        flex-wrap: nowrap;
+      }
+
+      .reserva-info {
+        flex: 1;
+      }
+
+      .reserva button {
+        flex: none;
+      }
     }
   </style>
 </head>
@@ -128,7 +146,7 @@
             <strong>${reserva.dia}/${reserva.mes}/${reserva.año}</strong> - ${reserva.hora}<br>
             ${reserva.nombre || "Sin nombre"} ${reserva.apellido || ""}
           </div>
-          <button onclick="eliminarReserva('${id}')">🗑️</button>
+          <button onclick="eliminarReserva('${id}')">🗑️ Cancelar</button>
         `;
 
         contenedor.appendChild(div);
@@ -140,7 +158,7 @@
     }
 
     window.eliminarReserva = async function(id) {
-      const confirmar = confirm("¿Querés eliminar esta reserva?");
+      const confirmar = confirm("¿Estás segura de que querés eliminar esta reserva?");
       if (confirmar) {
         await deleteDoc(doc(db, "reservas", id));
         alert("Reserva eliminada correctamente.");
