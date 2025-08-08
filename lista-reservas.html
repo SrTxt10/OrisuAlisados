@@ -1,7 +1,7 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lista de Reservas | Orisu</title>
@@ -21,30 +21,50 @@
       min-height: 100vh;
       text-align: center;
     }
-
     nav {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 10px 20px;
-      border-radius: 20px;
       z-index: 9999;
     }
-    nav a {
-      margin: 0 10px;
+    .menu-toggle {
+      display: none;
+      font-size: 2em;
+      cursor: pointer;
+      color: #b35b8c;
+    }
+    .menu {
+      background: rgba(255, 255, 255, 0.8);
+      list-style: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .menu li a {
       text-decoration: none;
       color: #b35b8c;
       font-weight: 600;
     }
-
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+      .menu {
+        flex-direction: column;
+        display: none;
+        position: absolute;
+        top: 50px;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 0 0 0 20px;
+      }
+      .menu.show { display: flex; }
+    }
     h1 {
       color: #b35b8c;
       margin-bottom: 30px;
       font-size: 2em;
       text-shadow: 1px 1px 2px #fff;
     }
-
     table {
       background-color: rgba(255, 255, 255, 0.9);
       border-collapse: collapse;
@@ -54,22 +74,13 @@
       width: 100%;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     th, td {
       padding: 12px 20px;
       text-align: center;
       border-bottom: 1px solid #f3cfe3;
     }
-
-    th {
-      background-color: #f9a8d4;
-      color: white;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
+    th { background-color: #f9a8d4; color: white; }
+    tr:last-child td { border-bottom: none; }
     .volver {
       margin-top: 30px;
       padding: 12px 25px;
@@ -79,19 +90,8 @@
       border-radius: 25px;
       text-decoration: none;
       font-size: 1em;
-      transition: background-color 0.3s ease;
     }
-
-    .volver:hover {
-      background-color: #f472b6;
-    }
-
-    #sinReservas, #sinPermisos {
-      margin-top: 20px;
-      font-size: 1.2em;
-      color: #6b3e57;
-    }
-
+    .volver:hover { background-color: #f472b6; }
     #claveModal {
       position: fixed;
       top: 0; left: 0;
@@ -102,7 +102,6 @@
       justify-content: center;
       z-index: 1000;
     }
-
     #claveModalContent {
       background-color: #fff0f5;
       padding: 30px;
@@ -110,7 +109,6 @@
       text-align: center;
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
     }
-
     #claveInput {
       padding: 10px;
       font-size: 1em;
@@ -120,7 +118,6 @@
       margin-top: 10px;
       margin-bottom: 20px;
     }
-
     #claveBtn {
       background-color: #f9a8d4;
       border: none;
@@ -130,11 +127,7 @@
       font-size: 1em;
       cursor: pointer;
     }
-
-    #claveBtn:hover {
-      background-color: #f472b6;
-    }
-
+    #claveBtn:hover { background-color: #f472b6; }
     .btn-eliminar {
       background-color: #e57373;
       color: white;
@@ -143,78 +136,88 @@
       border-radius: 10px;
       cursor: pointer;
     }
+    .btn-eliminar:hover { background-color: #d32f2f; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    .btn-eliminar:hover {
-      background-color: #d32f2f;
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqC_XW-S9z7kTOodf01oi9xCYdbmVVtm0",
+      authDomain: "orisualisados.firebaseapp.com",
+      projectId: "orisualisados",
+      storageBucket: "orisualisados.firebasestorage.app",
+      messagingSenderId: "626633649536",
+      appId: "1:626633649536:web:cb97b044ee0521d9462565",
+      measurementId: "G-XBW4NQJFQD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const claveAdmin = "52571499";
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("claveBtn").addEventListener("click", async () => {
+        const clave = document.getElementById("claveInput").value;
+        if (clave === claveAdmin) {
+          document.getElementById("claveModal").style.display = "none";
+          await cargarReservas();
+        } else {
+          alert("Clave incorrecta");
+        }
+      });
+    });
+
+    async function cargarReservas() {
+      const tabla = document.getElementById("tablaReservas");
+      const cuerpo = document.getElementById("cuerpoReservas");
+      tabla.style.display = "table";
+      document.getElementById("titulo").style.display = "block";
+      const snapshot = await getDocs(collection(db, "reservas"));
+
+      snapshot.forEach(docSnap => {
+        const reserva = docSnap.data();
+        const id = docSnap.id;
+        const tr = document.createElement("tr");
+        const fecha = new Date(`${reserva.año}-${reserva.mes}-${reserva.dia}`).toLocaleDateString("es-ES");
+        tr.innerHTML = `
+          <td>${fecha}</td>
+          <td>${reserva.hora}</td>
+          <td>${reserva.nombre || "-"}</td>
+          <td>${reserva.apellido || "-"}</td>
+          <td>${reserva.telefono || "-"}</td>
+          <td>${reserva.instagram || "-"}</td>
+          <td><button class="btn-eliminar" onclick="eliminar('${id}')">🗑️</button></td>
+        `;
+        cuerpo.appendChild(tr);
+      });
     }
-  
-nav {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-}
 
-.menu-toggle {
-  display: none;
-  font-size: 2em;
-  cursor: pointer;
-  color: #b35b8c;
-}
-
-.menu {
-  background: rgba(255, 255, 255, 0.8);
-  list-style: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  display: flex;
-  gap: 10px;
-}
-
-.menu li a {
-  text-decoration: none;
-  color: #b35b8c;
-  font-weight: 600;
-}
-
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-  }
-
-  .menu {
-    flex-direction: column;
-    display: none;
-    position: absolute;
-    top: 50px;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 0 0 0 20px;
-  }
-
-  .menu.show {
-    display: flex;
-  }
-}
-
-</style>
+    window.eliminar = async (id) => {
+      if (confirm("¿Estás segura de eliminar esta reserva?")) {
+        await deleteDoc(doc(db, "reservas", id));
+        location.reload();
+      }
+    };
+  </script>
 </head>
 <body>
-  <nav><nav>
-  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-  <ul class="menu" id="menu">
-    <li><a href="index.html">Inicio</a></li>
-    <li><a href="calendario.html">Reservar</a></li>
-    <li><a href="informacion.html">Información</a></li>
-    <li><a href="lista-reservas.html">Reservas</a></li>
-  </ul>
-</nav></nav>
+  <nav>
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+    <ul class="menu" id="menu">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="calendario.html">Reservar</a></li>
+      <li><a href="informacion.html">Información</a></li>
+      <li><a href="lista-reservas.html">Reservas</a></li>
+    </ul>
+  </nav>
 
   <div id="claveModal">
     <div id="claveModalContent">
       <h2>🔐 Ingresá la clave para ver las reservas</h2>
       <input type="password" id="claveInput" placeholder="Clave de administrador">
-      <button id="claveBtn" onclick="verificarClave()">Ingresar</button>
+      <button id="claveBtn">Ingresar</button>
     </div>
   </div>
 
@@ -234,83 +237,13 @@ nav {
     <tbody id="cuerpoReservas"></tbody>
   </table>
 
-  <div id="sinReservas" style="display: none;">No hay reservas registradas por ahora.</div>
-  <div id="sinPermisos" style="display: none;">🚫 Ups... no tenés permisos para entrar en esta parte de la web.</div>
   <a class="volver" href="index.html">Volver al Inicio</a>
 
   <script>
-    const claveAdmin = "orisu2024";
-
-    const cuerpo = document.getElementById("cuerpoReservas");
-    const tabla = document.getElementById("tablaReservas");
-    const sinReservas = document.getElementById("sinReservas");
-    const sinPermisos = document.getElementById("sinPermisos");
-    const titulo = document.getElementById("titulo");
-    const modal = document.getElementById("claveModal");
-    const inputClave = document.getElementById("claveInput");
-
-    function verificarClave() {
-      const claveIngresada = inputClave.value.trim();
-      if (claveIngresada === claveAdmin) {
-        modal.style.display = "none";
-        mostrarReservas();
-      } else {
-        modal.style.display = "none";
-        sinPermisos.style.display = "block";
-      }
-    }
-
-    function mostrarReservas() {
-      const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-
-      if (reservas.length === 0) {
-        tabla.style.display = "none";
-        sinReservas.style.display = "block";
-      } else {
-        tabla.style.display = "table";
-        sinReservas.style.display = "none";
-        titulo.style.display = "block";
-
-        cuerpo.innerHTML = "";
-
-        reservas.forEach((reserva, index) => {
-          const fila = document.createElement("tr");
-          const fechaFormateada = new Date(`${reserva.año}-${reserva.mes}-${reserva.dia}`).toLocaleDateString("es-ES", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-          });
-
-          fila.innerHTML = `
-            <td>${fechaFormateada}</td>
-            <td>${reserva.hora}</td>
-            <td>${reserva.nombre}</td>
-            <td>${reserva.apellido}</td>
-            <td>${reserva.telefono}</td>
-            <td>${reserva.instagram}</td>
-            <td><button class="btn-eliminar" onclick="eliminarReserva(${index})">🗑️</button></td>
-          `;
-
-          cuerpo.appendChild(fila);
-        });
-      }
-    }
-
-    function eliminarReserva(indice) {
-      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-      reservas.splice(indice, 1);
-      localStorage.setItem("reservas", JSON.stringify(reservas));
-      mostrarReservas();
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.classList.toggle("show");
     }
   </script>
-
-<script>
-  function toggleMenu() {
-    const menu = document.getElementById("menu");
-    menu.classList.toggle("show");
-  }
-</script>
-
 </body>
 </html>
